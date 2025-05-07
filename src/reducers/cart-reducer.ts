@@ -6,7 +6,7 @@ export type CartActions = // type de las acciones que se pueden realizar
     { type: 'remove-from-cart', payload: { id: Guitar['id'] } } |
     { type: 'decrease-quantity', payload: { id: Guitar['id'] } } |
     { type: 'increase-quantity', payload: { id: Guitar['id'] } } |
-    { type: 'clear-cart' } 
+    { type: 'clear-cart' }
 
 
 
@@ -21,6 +21,8 @@ export const initialState: CartState = { // estado inicial del carrito
     cart: []
 }
 
+const MIN_ITEMS = 1
+const MAX_ITEMS = 5
 
 
 
@@ -28,7 +30,46 @@ export const cartReducer = ( // reducer del carrito
     state: CartState = initialState,
     action: CartActions
 ) => {
-    if(action.type === 'add-to-cart') {
+    if (action.type === 'add-to-cart') {
+
+        const itemExists = state.cart.find(guitar => guitar.id === action.payload.item.id)
+
+        let updatedCart : CartItem[] = []
+        if (itemExists) { // existe en el carrito
+            updatedCart = state.cart.map(guitar => {
+                if(guitar.id === action.payload.item.id) {
+                    if(guitar.quantity < MAX_ITEMS) {
+                        return { ...guitar, quantity: guitar.quantity + 1 }
+                    } else {
+                        return guitar
+                    }
+                } else {
+                    return guitar
+                }
+            })
+        } else {
+            const newItem: CartItem = { ...action.payload.item, quantity: 1 }
+            updatedCart = [...state.cart, newItem]
+        }
+
+
+        return {
+            ...state,
+            cart: updatedCart
+        }
+    }
+
+    if (action.type === 'remove-from-cart') {
+
+        const updatedCart = state.cart.filter(guitar => guitar.id !== action.payload.id)
+
+        return {
+            ...state,
+            cart: updatedCart
+        }
+    }
+
+    if (action.type === 'decrease-quantity') {
 
 
         return {
@@ -36,7 +77,7 @@ export const cartReducer = ( // reducer del carrito
         }
     }
 
-    if(action.type === 'remove-from-cart') {
+    if (action.type === 'increase-quantity') {
 
 
         return {
@@ -44,23 +85,7 @@ export const cartReducer = ( // reducer del carrito
         }
     }
 
-    if(action.type === 'decrease-quantity') {
-
-
-        return {
-            ...state,
-        }
-    }
-
-    if(action.type === 'increase-quantity') {
-
-
-        return {
-            ...state,
-        }   
-    }
-
-    if(action.type === 'clear-cart') {
+    if (action.type === 'clear-cart') {
 
 
         return {
